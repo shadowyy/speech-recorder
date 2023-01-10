@@ -33,6 +33,9 @@ jobs:
                 registry-url: https://npm.pkg.github.com/
                 scope: '@iarahealth'
 
+            - name: Setup MSBuild
+              uses: microsoft/setup-msbuild@v1.1
+
             - name: Update package version
               uses: jaywcjlove/github-action-package@main
               with:
