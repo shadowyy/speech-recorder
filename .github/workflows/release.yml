@@ -1,0 +1,26 @@
+# .github/workflows/release.yml
+name: Create Release and publish
+run-name: ${{inputs.version}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+      prerelease:
+        description: 'Is this a prerelease?'
+        default: true
+        required: false
+        type: boolean
+
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [windows-latest]
+
+        steps:
+            - uses: actions/checkout@v3
