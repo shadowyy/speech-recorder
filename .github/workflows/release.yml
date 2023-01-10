@@ -34,7 +34,7 @@ jobs:
                 scope: '@iarahealth'
 
             - name: Setup MSBuild
-              uses: microsoft/setup-msbuild@v1.1
+              uses: seanmiddleditch/gha-setup-vsdevenv@master
 
             - name: Update package version
               uses: jaywcjlove/github-action-package@main
