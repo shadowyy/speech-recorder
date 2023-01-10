@@ -1,0 +1,50 @@
+# .github/workflows/release.yml
+name: Create Release and publish
+run-name: ${{inputs.version}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+      prerelease:
+        description: 'Is this a prerelease?'
+        default: true
+        required: false
+        type: boolean
+
+jobs:
+    build:
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            matrix:
+                os: [windows-latest]
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup node
+              uses: actions/setup-node@v3
+              with:
+                cache: 'npm'
+                node-version: 16
+                registry-url: https://npm.pkg.github.com/
+                scope: '@iarahealth'
+
+            - name: Update package version
+              uses: jaywcjlove/github-action-package@main
+              with:
+                version: ${{inputs.version}}
+
+            - name: Install NPM dependencies
+              run: npm install
+
+            - name: Setup system dependencies
+              run: C:\msys64\usr\bin\bash.exe ./setup.sh x64
+
+            - name: Build 
+              run: C:\msys64\usr\bin\bash.exe ./build.sh x64
+
+            - run: ls lib/build/
