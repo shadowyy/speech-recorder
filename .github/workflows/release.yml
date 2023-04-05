@@ -22,7 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup MSBuild
+      - if: matrix.os == 'windows-2019'
+        name: Setup MSBuild
         uses: seanmiddleditch/gha-setup-vsdevenv@master
 
       - name: Setup node
