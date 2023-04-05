@@ -1,0 +1,161 @@
+# .github/workflows/release.yml
+name: Create release and publish
+run-name: v${{inputs.version}}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: true
+      prerelease:
+        description: "Is this a prerelease?"
+        default: true
+        required: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            arch: arm64
+            name: darwin
+          - os: macos-latest
+            arch: x64
+            name: darwin
+          - os: ubuntu-latest
+            arch: x64
+            name: linux
+          - os: windows-2019
+            arch: x64
+            name: win32
+    steps:
+      - uses: actions/checkout@v3
+
+      - if: matrix.os == 'windows-2019'
+        name: Setup MSBuild
+        uses: seanmiddleditch/gha-setup-vsdevenv@master
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install NPM build dependencies
+        run: npm install node-gyp prebuild
+
+      - name: Update package version
+        uses: jaywcjlove/github-action-package@main
+        with:
+          version: ${{inputs.version}}
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Setup system dependencies
+        run: bash ./setup.sh x64
+
+      - name: Build
+        run: bash ./build.sh x64
+
+      - name: Compress artifacts
+        uses: a7ul/tar-action@v1.1.0
+        with:
+          command: c
+          files: ./build/Release
+          outPath: speech-recorder-v${{inputs.version}}-napi-v6-${{matrix.name}}-${{matrix.arch}}.tar.gz
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: speech-recorder-dist
+          path: speech-recorder-v${{inputs.version}}-napi-v6-${{matrix.name}}-${{matrix.arch}}.tar.gz
+          retention-days: 1
+
+  release-and-publish:
+    name: Create release and publish
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout to base branch
+        uses: actions/checkout@v3
+
+      - name: Get base version number from input
+        id: get-base-version
+        uses: frabert/replace-string-action@v2
+        with:
+          pattern: '-rc\d*'
+          string: "v${{inputs.version}}"
+          replace-with: ""
+
+      - name: Check if release tag exists
+        uses: mukunku/tag-exists-action@v1.2.0
+        id: check-release
+        with:
+          tag: ${{steps.get-base-version.outputs.replaced}}
+
+      - name: Create release branch
+        if: steps.check-release.outputs.exists == 'false'
+        run: git checkout -b release/${{steps.get-base-version.outputs.replaced}} && git push -u origin release/${{steps.get-base-version.outputs.replaced}}
+
+      - name: Merge base into release
+        if: steps.check-release.outputs.exists == 'true'
+        uses: everlytic/branch-merge@1.1.2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          source_ref: ${{ github.ref }}
+          target_branch: release/${{steps.get-base-version.outputs.replaced}}
+          commit_message_template: "[Automated] Merged {source_ref} into target {target_branch}"
+
+      - name: Checkout to release branch
+        uses: actions/checkout@v3
+        with:
+          ref: release/${{steps.get-base-version.outputs.replaced}}
+
+      - name: Update package version
+        uses: jaywcjlove/github-action-package@main
+        with:
+          version: ${{inputs.version}}
+
+      - run: npm install --ignore-scripts
+
+      - name: Commit changes to release branch
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Bump package version to v${{inputs.version}}"
+          file_pattern: package*.json
+          tagging_message: v${{inputs.version}}
+
+      - name: Update the release tag
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: ${{steps.get-base-version.outputs.replaced}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download speech-recorder artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: speech-recorder-dist
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: speech-recorder-v*.tar.gz
+          allowUpdates: true
+          generateReleaseNotes: true
+          name: ${{steps.get-base-version.outputs.replaced}}
+          prerelease: ${{inputs.prerelease}}
+          tag: ${{steps.get-base-version.outputs.replaced}}
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
