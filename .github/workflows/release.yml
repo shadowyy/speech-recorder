@@ -50,12 +50,14 @@ jobs:
       - name: Build
         run: bash ./build.sh x64
 
+      - run: ls build/
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: speech-recorder-dist
           path: |
-            lib/build/**
+            build/Release/*
           retention-days: 1
 
   create-release:
@@ -119,17 +121,15 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Download iara-desktop artifacts
+      - name: Download speech-recorder artifacts
         uses: actions/download-artifact@v3
         with:
           name: speech-recorder-dist
           path: build
 
-      - run: ls build
-
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: build
+          artifacts: build/*
           allowUpdates: true
           generateReleaseNotes: true
           name: ${{steps.get-base-version.outputs.replaced}}
@@ -148,7 +148,7 @@ jobs:
         with:
           node-version: 16
           registry-url: https://npm.pkg.github.com/
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run package
       - run: npm publish
         env:
