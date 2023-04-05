@@ -31,13 +31,13 @@ jobs:
         with:
           node-version: 16
 
+      - name: Install NPM build dependencies
+        run: npm install node-gyp prebuild
+
       - name: Update package version
         uses: jaywcjlove/github-action-package@main
         with:
           version: ${{inputs.version}}
-
-      - name: Install NPM dependencies
-        run: npm install
 
       - name: Setup system dependencies
         run: bash.exe ./setup.sh x64
