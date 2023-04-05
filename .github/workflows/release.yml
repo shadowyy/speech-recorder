@@ -40,10 +40,10 @@ jobs:
           version: ${{inputs.version}}
 
       - name: Setup system dependencies
-        run: bash.exe ./setup.sh x64
+        run: bash ./setup.sh x64
 
       - name: Build
-        run: bash.exe ./build.sh x64
+        run: bash ./build.sh x64
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
