@@ -1,0 +1,148 @@
+# .github/workflows/release.yml
+name: Create release and publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release"
+        required: true
+      prerelease:
+        description: "Is this a prerelease?"
+        default: true
+        required: false
+        type: boolean
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-2019]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup MSBuild
+        uses: seanmiddleditch/gha-setup-vsdevenv@master
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Update package version
+        uses: jaywcjlove/github-action-package@main
+        with:
+          version: ${{inputs.version}}
+
+      - name: Install NPM dependencies
+        run: npm install
+
+      - name: Setup system dependencies
+        run: bash.exe ./setup.sh x64
+
+      - name: Build
+        run: bash.exe ./build.sh x64
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: speech-recorder-dist
+          path: |
+            lib/build/**
+          retention-days: 1
+
+  create-release:
+    name: Update pkg version and create release branch
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout to base branch
+        uses: actions/checkout@v3
+
+      - name: Get base version number from input
+        id: get-base-version
+        uses: frabert/replace-string-action@v2
+        with:
+          pattern: '-rc\d*'
+          string: "v${{inputs.version}}"
+          replace-with: ""
+
+      - name: Check if release tag exists
+        uses: mukunku/tag-exists-action@v1.2.0
+        id: check-release
+        with:
+          tag: ${{steps.get-base-version.outputs.replaced}}
+
+      - name: Create release branch
+        if: steps.check-release.outputs.exists == 'false'
+        run: git checkout -b release/${{steps.get-base-version.outputs.replaced}} && git push -u origin release/${{steps.get-base-version.outputs.replaced}}
+
+      - name: Merge base into release
+        if: steps.check-release.outputs.exists == 'true'
+        uses: everlytic/branch-merge@1.1.2
+        with:
+          github_token: ${{secrets.GITHUB_TOKEN}}
+          source_ref: ${{ github.ref }}
+          target_branch: release/${{steps.get-base-version.outputs.replaced}}
+          commit_message_template: "[Automated] Merged {source_ref} into target {target_branch}"
+
+      - name: Checkout to release branch
+        uses: actions/checkout@v3
+        with:
+          ref: release/${{steps.get-base-version.outputs.replaced}}
+
+      - name: Update package version
+        uses: jaywcjlove/github-action-package@main
+        with:
+          version: ${{inputs.version}}
+      - run: npm install
+
+      - name: Commit changes to release branch
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Bump package version to v${{inputs.version}}"
+          file_pattern: package*.json
+          tagging_message: v${{inputs.version}}
+
+      - name: Update the release tag
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: ${{steps.get-base-version.outputs.replaced}}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download iara-desktop artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: speech-recorder-dist
+          path: build
+
+      - run: ls build
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: build
+          allowUpdates: true
+          generateReleaseNotes: true
+          name: ${{steps.get-base-version.outputs.replaced}}
+          prerelease: ${{inputs.prerelease}}
+          tag: ${{steps.get-base-version.outputs.replaced}}
+
+  publish:
+    name: Publish to NPM registry
+    needs: [create-release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: v${{inputs.version}}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com/
+      - run: npm ci
+      - run: npm run package
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}

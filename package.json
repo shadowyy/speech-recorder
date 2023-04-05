@@ -3,12 +3,14 @@
   "version": "2.1.0",
   "description": "A node.js library for streaming audio and speech from the microphone.",
   "main": "src/index.js",
-  "repository": "https://github.com/serenadeai/speech-recorder",
+  "repository": "https://github.com/iarahealth/speech-recorder",
   "author": "Serenade",
   "license": "MIT",
   "gypfile": true,
   "binary": {
-    "napi_versions": [6]
+    "napi_versions": [
+      6
+    ]
   },
   "scripts": {
     "build": "bash build.sh",
