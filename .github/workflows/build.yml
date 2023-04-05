@@ -13,6 +13,14 @@ jobs:
       - name: Setup MSBuild
         uses: seanmiddleditch/gha-setup-vsdevenv@master
 
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install NPM dependencies
+        run: npm install
+
       - name: Setup system dependencies
         run: bash.exe ./setup.sh x64
 
