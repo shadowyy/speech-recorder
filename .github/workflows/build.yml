@@ -14,9 +14,9 @@ jobs:
         uses: seanmiddleditch/gha-setup-vsdevenv@master
 
       - name: Setup system dependencies
-        run: C:\msys64\usr\bin\bash.exe ./setup.sh x64
+        run: bash.exe ./setup.sh x64
 
       - name: Build
-        run: C:\msys64\usr\bin\bash.exe ./build.sh x64
+        run: bash.exe ./build.sh x64
 
       - run: ls lib/build/
