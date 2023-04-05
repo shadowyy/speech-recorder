@@ -62,13 +62,13 @@ jobs:
       - name: Build
         run: bash ./build.sh x64
 
-      - run: ls build/
+      - run: ls ./build/Release
 
       - name: Compress artifacts
         uses: a7ul/tar-action@v1.1.0
         with:
           command: c
-          files: ./build/Release/*
+          files: ./build/Release
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-${{matrix.name}}-${{matrix.arch}}.tar.gz
 
       - name: Upload artifacts
