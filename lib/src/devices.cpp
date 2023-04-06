@@ -8,6 +8,7 @@
 namespace speechrecorder {
 
 std::vector<Device> GetDevices() {
+  Pa_Terminate();
   Pa_Initialize();
   std::vector<Device> result;
 
@@ -30,7 +31,6 @@ std::vector<Device> GetDevices() {
                           i == Pa_GetDefaultOutputDevice());
     }
   }
-  Pa_Terminate();
 
   return result;
 }
