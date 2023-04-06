@@ -19,11 +19,11 @@ std::vector<Device> GetDevices() {
     const PaDeviceInfo* info = Pa_GetDeviceInfo(i);
     bool include = info->maxInputChannels > 0;
 
-#ifdef WIN32
-    if (strcmp(Pa_GetHostApiInfo(info->hostApi)->name, "MME") != 0) {
-      include = false;
-    }
-#endif
+    // #ifdef WIN32
+    //     if (strcmp(Pa_GetHostApiInfo(info->hostApi)->name, "MME") != 0) {
+    //       include = false;
+    //     }
+    // #endif
 
     if (include) {
       result.emplace_back(i, info->name, Pa_GetHostApiInfo(info->hostApi)->name,
@@ -33,6 +33,7 @@ std::vector<Device> GetDevices() {
                           i == Pa_GetDefaultOutputDevice());
     }
   }
+  Pa_Terminate();
 
   return result;
 }
