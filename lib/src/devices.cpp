@@ -3,15 +3,19 @@
 #include <string>
 #include <vector>
 
+#include <iostream>
 #include "devices.h"
 
 namespace speechrecorder {
 
 std::vector<Device> GetDevices() {
+  Pa_Terminate();
   Pa_Initialize();
   std::vector<Device> result;
 
   int count = Pa_GetDeviceCount();
+  std::cerr << "devices1: " << count << std::endl;
+
   for (int i = 0; i < count; i++) {
     const PaDeviceInfo* info = Pa_GetDeviceInfo(i);
     bool include = info->maxInputChannels > 0;
@@ -30,7 +34,6 @@ std::vector<Device> GetDevices() {
                           i == Pa_GetDefaultOutputDevice());
     }
   }
-  Pa_Terminate();
 
   return result;
 }
