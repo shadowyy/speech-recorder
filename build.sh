@@ -40,7 +40,7 @@ if [[ "$1" == "x86" ]] ; then
   node_arch="ia32"
 fi
 
-eval "npm_config_arch=$node_arch ./node_modules/.bin/node-gyp rebuild"
+eval "npm_config_arch=$node_arch ./node_modules/.bin/node-gyp rebuild --python=3.10"
 
 prebuild_command="./node_modules/.bin/prebuild -r napi --include-regex '.(node|a|dylib|dll|so.*)$' --arch=$node_arch"
 if [[ -n "$2" ]] ; then
