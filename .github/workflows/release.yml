@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
+          - os: self-hosted
             arch: arm64
             name: darwin
           - os: macos-latest
@@ -52,16 +52,21 @@ jobs:
         with:
           version: ${{inputs.version}}
 
-      - name: Setup python
+      - name: Setup x64 python
+        if: matrix.arch != 'arm64'
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
+      - name: Setup arm64 python
+        if: matrix.arch == 'arm64'
+        run: brew install python@3.10 cmake && echo "NODE_GYP_FORCE_PYTHON=/opt/homebrew/bin/python3.10" >> $GITHUB_ENV
+
       - name: Setup system dependencies
-        run: bash ./setup.sh x64
+        run: bash ./setup.sh ${{ matrix.arch }}
 
       - name: Build
-        run: bash ./build.sh x64
+        run: bash ./build.sh ${{ matrix.arch }}
 
       - name: Compress artifacts
         uses: a7ul/tar-action@v1.1.0
