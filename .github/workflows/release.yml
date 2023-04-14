@@ -60,7 +60,7 @@ jobs:
 
       - name: Setup arm64 python
         if: matrix.arch == 'arm64'
-        run: brew install python@3.10
+        run: brew install python@3.10 cmake
 
       - name: Setup system dependencies
         run: bash ./setup.sh ${{ matrix.arch }}
