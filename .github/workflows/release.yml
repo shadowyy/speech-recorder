@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
+          - os: self-hosted
             arch: arm64
             name: darwin
           - os: macos-latest
