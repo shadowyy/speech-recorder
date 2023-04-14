@@ -58,10 +58,10 @@ jobs:
           python-version: "3.10"
 
       - name: Setup system dependencies
-        run: bash ./setup.sh x64
+        run: bash ./setup.sh ${{ matrix.arch }}
 
       - name: Build
-        run: bash ./build.sh x64
+        run: bash ./build.sh ${{ matrix.arch }}
 
       - name: Compress artifacts
         uses: a7ul/tar-action@v1.1.0
