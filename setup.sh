@@ -38,9 +38,11 @@ fi
 
 portaudio_cmake+=" .."
 eval $portaudio_cmake
-cmake --build . --config Release
+cmake --build . --config RelWithDebInfo
+mv RelWithDebInfo Release
 cmake --install . --prefix ../install
 cp -r ../install ../../../../lib/3rd_party/portaudio
+cp Release/*.pdb ../../../../lib/3rd_party/portaudio/lib
 
 cd ../../..
 mkdir onnxruntime
@@ -57,8 +59,7 @@ if [[ `uname -s` == "MINGW"* ]] ; then
     path="win-x64"
   fi
 
-  cp runtimes/$path/native/*.dll ../../lib/3rd_party/onnxruntime/lib
-  cp runtimes/$path/native/*.lib ../../lib/3rd_party/onnxruntime/lib
+  cp runtimes/$path/native/* ../../lib/3rd_party/onnxruntime/lib
 else
   path="onnxruntime-linux-x64-1.10.0"
   if [[ `uname -s` == "Darwin" ]] ; then
