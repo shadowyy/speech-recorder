@@ -38,11 +38,17 @@ fi
 
 portaudio_cmake+=" .."
 eval $portaudio_cmake
-cmake --build . --config RelWithDebInfo
-mv RelWithDebInfo Release
-cmake --install . --prefix ../install
-cp -r ../install ../../../../lib/3rd_party/portaudio
-cp Release/*.pdb ../../../../lib/3rd_party/portaudio/lib
+if [[ `uname -s` == "MINGW"* ]] ; then
+  cmake --build . --config RelWithDebInfo
+  mv RelWithDebInfo Release
+  cmake --install . --prefix ../install
+  cp -r ../install ../../../../lib/3rd_party/portaudio
+  cp Release/*.pdb ../../../../lib/3rd_party/portaudio/lib
+else
+  cmake --build . --config Release
+  cmake --install . --prefix ../install
+  cp -r ../install ../../../../lib/3rd_party/portaudio
+fi
 
 cd ../../..
 mkdir onnxruntime
