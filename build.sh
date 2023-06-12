@@ -29,7 +29,12 @@ else
   cmake ..
 fi
 
-cmake --build . --config Release
+if [[ `uname -s` == "MINGW"* ]] ; then
+  cmake --build . --config RelWithDebInfo
+  mv RelWithDebInfo Release
+else
+  cmake --build . --config Release
+fi
 cmake --install . --prefix ../install
 
 cd ../..
