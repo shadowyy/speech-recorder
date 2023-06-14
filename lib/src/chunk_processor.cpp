@@ -60,7 +60,7 @@ ChunkProcessor::ChunkProcessor(std::string modelPath,
 ChunkProcessor::~ChunkProcessor() {
   // shutdown the queue thread.
   stopped_ = true;
-  queue_.enqueue(nullptr); 
+  queue_.enqueue(nullptr);
   queueThread_.join();
 
   if (stopThread_.joinable()) {
@@ -214,6 +214,9 @@ void ChunkProcessor::Reset() {
 }
 
 void ChunkProcessor::Start() {
+  if (stopThread_.joinable()) {
+    stopThread_.join();
+  }
   toggleLock_.lock();
   startThread_ = std::thread([&] {
     Reset();
@@ -224,6 +227,9 @@ void ChunkProcessor::Start() {
 }
 
 void ChunkProcessor::Stop() {
+  if (startThread_.joinable()) {
+    startThread_.join();
+  }
   toggleLock_.lock();
   stopThread_ = std::thread([&] {
     stopped_ = true;
