@@ -1,6 +1,6 @@
 {
   "name": "@iarahealth/speech-recorder",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "A node.js library for streaming audio and speech from the microphone.",
   "main": "src/index.js",
   "repository": "https://github.com/iarahealth/speech-recorder",
