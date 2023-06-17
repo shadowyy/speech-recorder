@@ -272,7 +272,6 @@ Napi::Value GetDevices(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
 
   std::vector<speechrecorder::Device> devices = speechrecorder::GetDevices();
-  std::cerr << "devices0: " << devices.size() << std::endl;
   Napi::Array result = Napi::Array::New(env, devices.size());
   for (size_t i = 0; i < devices.size(); i++) {
     Napi::Object e = Napi::Object::New(env);

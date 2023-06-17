@@ -20,7 +20,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: self-hosted
+          - os: self-hosted-macos-arm
             arch: arm64
             name: darwin
           - os: macos-latest
@@ -60,7 +60,9 @@ jobs:
 
       - name: Setup arm64 python
         if: matrix.arch == 'arm64'
-        run: brew install python@3.10 cmake && echo "NODE_GYP_FORCE_PYTHON=/opt/homebrew/bin/python3.10" >> $GITHUB_ENV
+        run: |
+          brew install python@3.10 cmake
+          echo "NODE_GYP_FORCE_PYTHON=/opt/homebrew/bin/python3.10" >> $GITHUB_ENV
 
       - name: Setup system dependencies
         run: bash ./setup.sh ${{ matrix.arch }}
