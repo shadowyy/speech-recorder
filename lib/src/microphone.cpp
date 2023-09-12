@@ -41,6 +41,7 @@ Microphone::Microphone(int device, int samplesPerFrame, int sampleRate,
   }
 
   callbackData_ = {&buffer_, 0, queue};
+  Pa_Terminate();
   PaError error = Pa_Initialize();
   if (error != paNoError) {
     HandleError(error, "Initialize");
