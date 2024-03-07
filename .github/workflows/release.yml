@@ -134,12 +134,8 @@ jobs:
           files: ./build/Release
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-darwin-x64.tar.gz
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: speech-recorder-dist
-          path: speech-recorder-*.tar.gz
-          retention-days: 1
+      - name: Cleanup macos build
+        run: rm -rf build/Release
 
       - name: Download linux build artifacts
         uses: actions/download-artifact@v3
@@ -153,6 +149,13 @@ jobs:
           command: c
           files: ./build/Release
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-linux-x64.tar.gz
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: speech-recorder-dist
+          path: speech-recorder-*.tar.gz
+          retention-days: 1
 
       - name: Cleanup linux build
         run: rm -rf build/Release
