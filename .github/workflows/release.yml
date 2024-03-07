@@ -32,6 +32,9 @@ jobs:
           - os: windows-2019
             arch: x64
             name: win32
+          - os: ubuntu-latest
+            arch: x64
+            name: linux
     steps:
       - uses: actions/checkout@v3
 
@@ -137,6 +140,22 @@ jobs:
           name: speech-recorder-dist
           path: speech-recorder-*.tar.gz
           retention-days: 1
+
+      - name: Download linux build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-linux-x64
+          path: build/Release
+
+      - name: Compress linux artifacts
+        uses: a7ul/tar-action@v1.1.0
+        with:
+          command: c
+          files: ./build/Release
+          outPath: speech-recorder-v${{inputs.version}}-napi-v6-linux-x64.tar.gz
+
+      - name: Cleanup linux build
+        run: rm -rf build/Release
 
   release-and-publish:
     name: Create release and publish
