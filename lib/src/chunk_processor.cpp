@@ -2,6 +2,8 @@
 #include <chrono>
 #include <climits>
 #include <cmath>
+#include <filesystem>
+#include <locale>
 #include <iostream>
 #include <memory>
 
@@ -23,6 +25,8 @@ ChunkProcessor::ChunkProcessor(std::string modelPath,
                   &queue_),
       webrtcVad_(options.webrtcVadLevel, options.sampleRate) {
   queueThread_ = std::thread([&, modelPath] {
+    setlocale(LC_ALL, "pt_BR.UTF-8");
+
     ortMutex_.lock();
     if (!ortSession_) {
       ortEnv_ = std::make_unique<Ort::Env>(ORT_LOGGING_LEVEL_WARNING,
@@ -33,10 +37,10 @@ ChunkProcessor::ChunkProcessor(std::string modelPath,
       Ort::SessionOptions sessionOptions;
       sessionOptions.SetIntraOpNumThreads(1);
 #ifdef _WIN32
-      std::wstring wstring(modelPath.begin(), modelPath.end());
-      ortSession_ = std::make_unique<Ort::Session>(*ortEnv_, wstring.c_str(),
-                                                   sessionOptions);
-
+      std::filesystem::path unicodeModelPath(modelPath.begin(),
+                                             modelPath.end());
+      ortSession_ = std::make_unique<Ort::Session>(
+          *ortEnv_, unicodeModelPath.c_str(), sessionOptions);
 #else
       ortSession_ = std::make_unique<Ort::Session>(*ortEnv_, modelPath.c_str(),
                                                    sessionOptions);
