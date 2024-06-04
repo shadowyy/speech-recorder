@@ -8,6 +8,7 @@
 #include <thread>
 #include <vector>
 
+#include "agc.h"
 #include "aligned.h"
 #include "microphone.h"
 #include "onnxruntime_cxx_api.h"

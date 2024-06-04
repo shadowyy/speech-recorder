@@ -40,6 +40,7 @@ FetchContent_MakeAvailable(drwav readerwriterqueue)
 include_directories(
     include
     3rd_party/webrtcvad
+    3rd_party/WebRTC_AGC
     3rd_party/portaudio/include
     3rd_party/onnxruntime/include
 )
@@ -51,6 +52,7 @@ link_directories(
 
 file(GLOB_RECURSE SOURCES
     src/*.cpp
+    3rd_party/WebRTC_AGC/*.c
     3rd_party/webrtcvad/*.c
     3rd_party/webrtcvad/*.cc
 )

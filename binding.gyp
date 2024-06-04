@@ -18,6 +18,7 @@
                 "<(module_root_dir)/lib/build/_deps/drwav-src",
                 "<(module_root_dir)/lib/build/_deps/readerwriterqueue-src",
                 "<(module_root_dir)/lib/3rd_party/webrtcvad",
+                "<(module_root_dir)/lib/3rd_party/WebRTC_AGC",
                 "<(module_root_dir)/lib/3rd_party/portaudio/include",
                 "<(module_root_dir)/lib/3rd_party/onnxruntime/include",
             ],

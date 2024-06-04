@@ -1,13 +1,16 @@
+#include "chunk_processor.h"
 #include <algorithm>
 #include <chrono>
 #include <climits>
 #include <cmath>
 #include <filesystem>
-#include <locale>
 #include <iostream>
+#include <locale>
 #include <memory>
 
-#include "chunk_processor.h"
+#ifndef MIN
+#define MIN(A, B) ((A) < (B) ? (A) : (B))
+#endif
 
 namespace speechrecorder {
 
@@ -48,7 +51,7 @@ ChunkProcessor::ChunkProcessor(std::string modelPath,
     }
     ortMutex_.unlock();
     while (true) {
-      short* audio;
+      short *audio;
       queue_.wait_dequeue(audio);
       // null pointer means the destructor wants us to stop the thread.
       if (audio == nullptr) {
@@ -75,9 +78,91 @@ ChunkProcessor::~ChunkProcessor() {
   }
 }
 
-void ChunkProcessor::Process(short* input) {
+int agcProcess(int16_t *buffer, uint32_t sampleRate, size_t samplesCount,
+               int16_t agcMode) {
+  if (buffer == nullptr) return -1;
+  if (samplesCount == 0) return -1;
+  WebRtcAgcConfig agcConfig;
+  agcConfig.compressionGaindB = 9;  // default 9 dB
+  agcConfig.limiterEnable = 1;      // default kAgcTrue (on)
+  agcConfig.targetLevelDbfs = 3;    // default 3 (-3 dBOv)
+  int minLevel = 0;
+  int maxLevel = 255;
+  size_t samples = MIN(160, sampleRate / 100);
+  if (samples == 0) return -1;
+  const int maxSamples = 320;
+  int16_t *input = buffer;
+  size_t nTotal = (samplesCount / samples);
+  void *agcInst = WebRtcAgc_Create();
+  if (agcInst == NULL) return -1;
+  int status = WebRtcAgc_Init(agcInst, minLevel, maxLevel, agcMode, sampleRate);
+  if (status != 0) {
+    printf("WebRtcAgc_Init fail\n");
+    WebRtcAgc_Free(agcInst);
+    return -1;
+  }
+  status = WebRtcAgc_set_config(agcInst, agcConfig);
+  if (status != 0) {
+    printf("WebRtcAgc_set_config fail\n");
+    WebRtcAgc_Free(agcInst);
+    return -1;
+  }
+  size_t num_bands = 1;
+  int inMicLevel, outMicLevel = -1;
+  int16_t out_buffer[maxSamples];
+  int16_t *out16 = out_buffer;
+  uint8_t saturationWarning =
+      1;  // 是否有溢出发生，增益放大以后的最大值超过了65536
+  int16_t echo = 0;  // 增益放大是否考虑回声影响
+  for (int i = 0; i < nTotal; i++) {
+    inMicLevel = 0;
+    int nAgcRet =
+        WebRtcAgc_Process(agcInst, (const int16_t *const *)&input, num_bands,
+                          samples, (int16_t *const *)&out16, inMicLevel,
+                          &outMicLevel, echo, &saturationWarning);
+
+    if (nAgcRet != 0) {
+      printf("failed in WebRtcAgc_Process\n");
+      WebRtcAgc_Free(agcInst);
+      return -1;
+    }
+    memcpy(input, out_buffer, samples * sizeof(int16_t));
+    input += samples;
+  }
+
+  const size_t remainedSamples = samplesCount - nTotal * samples;
+  if (remainedSamples > 0) {
+    if (nTotal > 0) {
+      input = input - samples + remainedSamples;
+    }
+
+    inMicLevel = 0;
+    int nAgcRet =
+        WebRtcAgc_Process(agcInst, (const int16_t *const *)&input, num_bands,
+                          samples, (int16_t *const *)&out16, inMicLevel,
+                          &outMicLevel, echo, &saturationWarning);
+
+    if (nAgcRet != 0) {
+      printf("failed in WebRtcAgc_Process during filtering the last chunk\n");
+      WebRtcAgc_Free(agcInst);
+      return -1;
+    }
+    memcpy(&input[samples - remainedSamples],
+           &out_buffer[samples - remainedSamples],
+           remainedSamples * sizeof(int16_t));
+    input += samples;
+  }
+
+  WebRtcAgc_Free(agcInst);
+  return 1;
+}
+
+void ChunkProcessor::Process(short *input) {
   std::vector<short> frame;
-  const short* iterator = (const short*)input;
+  agcProcess(input, options_.sampleRate, options_.samplesPerFrame,
+             kAgcModeAdaptiveDigital);
+
+  const short *iterator = (const short *)input;
   unsigned long long sum = 0;
   for (unsigned long i = 0; i < options_.samplesPerFrame; i++) {
     const short value = *iterator++;
@@ -158,8 +243,8 @@ void ChunkProcessor::Process(short* input) {
           *ortMemory_, outputTensorValues.data(), outputTensorValues.size(),
           outputDimensions.data(), outputDimensions.size()));
 
-      std::vector<const char*> inputNames{"input"};
-      std::vector<const char*> outputNames{"output"};
+      std::vector<const char *> inputNames{"input"};
+      std::vector<const char *> outputNames{"output"};
       ortSession_->Run(Ort::RunOptions{nullptr}, inputNames.data(),
                        inputTensors.data(), 1, outputNames.data(),
                        outputTensors.data(), 1);
@@ -212,7 +297,7 @@ void ChunkProcessor::Reset() {
   webrtcVad_.Reset();
   webrtcVadBuffer_.clear();
   webrtcVadResults_.clear();
-  short* audio;
+  short *audio;
   while (queue_.try_dequeue(audio)) {
   }
 }
