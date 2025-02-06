@@ -32,6 +32,9 @@ jobs:
           - os: windows-2019
             arch: x64
             name: win32
+          - os: windows-2019
+            arch: x86
+            name: win32
           - os: ubuntu-latest
             arch: x64
             name: linux
