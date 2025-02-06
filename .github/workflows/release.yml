@@ -77,7 +77,7 @@ jobs:
         run: bash ./build.sh ${{ matrix.arch }}
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-${{matrix.name}}-${{matrix.arch}}
           path: build/Release
@@ -154,7 +154,7 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-linux-x64.tar.gz
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: speech-recorder-dist
           path: speech-recorder-*.tar.gz
