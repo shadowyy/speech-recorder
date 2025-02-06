@@ -26,9 +26,9 @@ jobs:
 #          - os: macos-latest
 #            arch: x64
 #            name: darwin
-#          - os: windows-2019
-#            arch: x64
-#            name: win32
+          - os: windows-2019
+            arch: x64
+            name: win32
           - os: windows-2019
             arch: x86
             name: win32
@@ -84,6 +84,8 @@ jobs:
     runs-on: windows-2019
     needs: build
     steps:
+
+      # win32-x64
       - name: Download win build artifacts
         uses: actions/download-artifact@v4
         with:
@@ -96,6 +98,23 @@ jobs:
           command: c
           files: ./build/Release
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x64.tar.gz
+
+      - name: Cleanup win build
+        run: rm -rf build/Release
+
+      # win32-x86
+      - name: Download win build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-win32-x86
+          path: build/Release
+
+      - name: Compress win artifacts
+        uses: a7ul/tar-action@v1.1.0
+        with:
+          command: c
+          files: ./build/Release
+          outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x86.tar.gz
 
       - name: Cleanup win build
         run: rm -rf build/Release
