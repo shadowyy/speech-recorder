@@ -20,18 +20,18 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: self-hosted-macos-arm
-            arch: arm64
-            name: darwin
-          - os: macos-latest
-            arch: x64
-            name: darwin
-          - os: ubuntu-latest
-            arch: x64
-            name: linux
-          - os: windows-2017
-            arch: x64
-            name: win32
+#          - os: self-hosted-macos-arm
+#            arch: arm64
+#            name: darwin
+#          - os: macos-latest
+#            arch: x64
+#            name: darwin
+#          - os: ubuntu-latest
+#            arch: x64
+#            name: linux
+#          - os: windows-2017
+#            arch: x64
+#            name: win32
           - os: windows-2017
             arch: x86
             name: win32
