@@ -100,7 +100,7 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x64.tar.gz
 
       - name: Cleanup win build
-        run: rm -rf build/Release
+        run: rmdir /S /Q build/Release
 
       # win32-x86
       - name: Download win build artifacts
@@ -117,7 +117,7 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x86.tar.gz
 
       - name: Cleanup win build
-        run: rm -rf build/Release
+        run: rmdir /S /Q build/Release
 
 #      - name: Download x64 macOS build artifacts
 #        uses: actions/download-artifact@v4
