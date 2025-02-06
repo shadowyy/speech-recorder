@@ -29,19 +29,16 @@ jobs:
           - os: ubuntu-latest
             arch: x64
             name: linux
-          - os: windows-2019
+          - os: windows-2017
             arch: x64
             name: win32
-          - os: windows-2019
+          - os: windows-2017
             arch: x86
             name: win32
-          - os: ubuntu-latest
-            arch: x64
-            name: linux
     steps:
       - uses: actions/checkout@v3
 
-      - if: matrix.os == 'windows-2019'
+      - if: matrix.os == 'windows-2017'
         name: Setup MSBuild
         uses: seanmiddleditch/gha-setup-vsdevenv@master
 
