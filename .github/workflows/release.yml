@@ -81,7 +81,7 @@ jobs:
           retention-days: 1
 
   package:
-    runs-on: windows-2019
+    runs-on: ubuntu-latest
     needs: build
     steps:
 
@@ -100,7 +100,7 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x64.tar.gz
 
       - name: Cleanup win build
-        run: Remove-Item -Path "build/Release" -Recurse
+        run: rm -rf build/Release
 
       # win32-x86
       - name: Download win build artifacts
@@ -117,8 +117,8 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x86.tar.gz
 
       - name: Cleanup win build
-        run: Remove-Item -Path "build/Release" -Recurse
-
+        run: rm -rf build/Release
+      
       - name: Download linux build artifacts
         uses: actions/download-artifact@v4
         with:
