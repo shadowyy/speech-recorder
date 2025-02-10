@@ -100,7 +100,7 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x64.tar.gz
 
       - name: Cleanup win build
-        run: rmdir /S /Q build/Release
+        run: Remove-Item -Path "build/Release" -Recurse
 
       # win32-x86
       - name: Download win build artifacts
@@ -117,44 +117,7 @@ jobs:
           outPath: speech-recorder-v${{inputs.version}}-napi-v6-win32-x86.tar.gz
 
       - name: Cleanup win build
-        run: rmdir /S /Q build/Release
-
-#      - name: Download x64 macOS build artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: build-darwin-x64
-#          path: build/Release-x64
-#
-#      - name: Download arm64 macOS build artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: build-darwin-arm64
-#          path: build/Release-arm64
-#
-#      - name: Create universal macOS build
-#        run: |
-#          mkdir -p build/Release
-#          lipo -create -output build/Release/libonnxruntime.1.10.0.dylib build/Release-x64/libonnxruntime.1.10.0.dylib build/Release-arm64/libonnxruntime.1.10.0.dylib
-#          lipo -create -output build/Release/libportaudio.dylib build/Release-x64/libportaudio.dylib build/Release-arm64/libportaudio.dylib
-#          lipo -create -output build/Release/libspeechrecorder.dylib build/Release-x64/libspeechrecorder.dylib build/Release-arm64/libspeechrecorder.dylib
-#          lipo -create -output build/Release/speechrecorder.node build/Release-x64/speechrecorder.node build/Release-arm64/speechrecorder.node
-#
-#      - name: Compress macOS arm artifacts
-#        uses: a7ul/tar-action@v1.1.0
-#        with:
-#          command: c
-#          files: ./build/Release
-#          outPath: speech-recorder-v${{inputs.version}}-napi-v6-darwin-arm64.tar.gz
-#
-#      - name: Compress macOS x64 artifacts
-#        uses: a7ul/tar-action@v1.1.0
-#        with:
-#          command: c
-#          files: ./build/Release
-#          outPath: speech-recorder-v${{inputs.version}}-napi-v6-darwin-x64.tar.gz
-#
-#      - name: Cleanup macos build
-#        run: rm -rf build/Release
+        run: Remove-Item -Path "build/Release" -Recurse
 
       - name: Download linux build artifacts
         uses: actions/download-artifact@v4
